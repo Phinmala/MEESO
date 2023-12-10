@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "Run MEESO",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py", // Specify the full path to your file
+            "cwd": "${workspaceFolder}",
+            "env": {},
+            "envFile": "${workspaceFolder}/.myenv",
+        }
+    ]
+}

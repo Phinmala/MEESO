@@ -2,7 +2,14 @@ import speech_recognition as sr
 from meeso import voice_input_mode, typing_input_mode
 from config import get_openai_client
 
-      
+def main_menu():
+    print("\nMain Menu:")
+    print("1. Voice Input Mode")
+    print("2. Typing Input Mode")
+    print("3. Change TTS Option")
+    print("4. Exit")
+    return input("Enter your choice: ")
+
 def main():
     client = get_openai_client()
     assistants = client.beta.assistants.list(order="desc", limit="20")
@@ -24,16 +31,23 @@ def main():
     thread_details = client.beta.threads.retrieve(thread_id=existing_thread_id)
     print("Thread Details:")
     print(thread_details)
+    print("\n>> WELCOME TO MEESO!")
+    tts_choice = input("Choose TTS option (1 for OpenAI, 2 for Google TTS, 3 for NONE): ").strip()
 
-    tts_choice = input("Choose TTS option (1 for OpenAI TTS, 2 for Google TTS): ").strip()
-    input_method = input("\n>> Choose input method: Type 'voice' for voice recognition or 'type' for typing: ").lower()
-    assistant_id = assistants.data[0].id
-    if input_method == 'voice':
-        voice_input_mode(assistant_id,client, existing_thread_id, tts_choice)
-    elif input_method == 'type':
-        typing_input_mode(assistant_id, client, existing_thread_id, tts_choice)
-    else:
-        print("[ERROR] Invalid input method. Please type 'voice' or 'type'.")
+    while True:
+        choice = main_menu()
+        if choice == '1':
+            voice_input_mode(assistant_id, client, existing_thread_id, tts_choice)
+        elif choice == '2':
+            typing_input_mode(assistant_id, client, existing_thread_id, tts_choice)
+        elif choice == '3':
+            tts_choice = input("Choose TTS option (1 for OpenAI, 2 for Google TTS, 3 for NONE): ").strip()
+            continue  # Immediately prompt for next action
+        elif choice == '4':
+            print(">> Exiting MEESO Assistant.")
+            break  # Exit the application
+        else:
+            print("[ERROR] Invalid input method")
 
 
 if __name__ == "__main__":

@@ -17,7 +17,6 @@ def ask_openai(assistant_id, question, client, existing_thread_id, tts_option):
     # Wait for the run to complete and retrieve the response
  
     while True:
-
         run = client.beta.threads.runs.retrieve(
             thread_id=existing_thread_id,
             run_id=run.id
@@ -29,8 +28,11 @@ def ask_openai(assistant_id, question, client, existing_thread_id, tts_option):
                     last_message = message.content[0].text.value
                     #return (last_message)
                     print("MEESO: " + last_message)
-                    tts_file = text_to_speech(last_message, tts_option)  # Convert text to speech
-                    return tts_file   
+                    if tts_option == "3":
+                        return None
+                    else:
+                        tts_file = text_to_speech(last_message, tts_option)  # Convert text to speech
+                        return tts_file   
             return ">> No response from the assistant.", None
         print('>> MEESO is thinking...')
         time.sleep(2)
@@ -38,57 +40,63 @@ def ask_openai(assistant_id, question, client, existing_thread_id, tts_option):
 def voice_input_mode(assistant_id, client, existing_thread_id, tts_option):
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
-    print(">> MEESO Assistant Ready (Voice Mode). Press Enter to start speaking. Recording will stop if silence is detected for 5 seconds.")
+    print("\n>> MEESO Assistant Ready (Voice Mode). Press Enter to start speaking. Recording will stop if silence is detected for 5 seconds.")
 
     while True:
-        print(">> Press Enter to start speaking...")
-        keyboard.wait('enter')  # Wait for Enter key to be pressed
-        with microphone as source:
-            
-            try:
-                recognizer.adjust_for_ambient_noise(source,duration=2)
-                print(">> Listening... Speak now.")
-                recognizer.pause_threshold = 2.0
-                audio = recognizer.listen(source, timeout=5)
-                user_input = recognizer.recognize_google(audio).lower()
-                print("original string: " + user_input)
-                user_input = user_input.replace('miso', 'MEESO')
-                user_input = user_input.replace('me so', 'MEESO')
-                user_input = user_input.replace('mesa', 'MEESO')
-
-                if user_input == 'exit':
-                    print(">> Exiting MEESO Assistant.")
-                    break
-
-                print("You: " + user_input)
-         
-                tts_file = ask_openai(assistant_id, user_input, client, existing_thread_id, tts_option)
+        user_input = input("Press Enter to Continue or 'm' to exit to Main Menu: ")
+        if user_input == 'm':
+            return  # Return to the main function
+        else:
+            with microphone as source:
                 
-                if tts_file:
-                    play_audio(tts_file)
+                try:
+                    recognizer.adjust_for_ambient_noise(source,duration=2)
+                    print(">> Listening... Speak now.")
+                    recognizer.pause_threshold = 2.0
+                    audio = recognizer.listen(source, timeout=5)
+                    user_input = recognizer.recognize_google(audio).lower()
+                    print("original string: " + user_input)
+                    user_input = user_input.replace('miso', 'MEESO')
+                    user_input = user_input.replace('me so', 'MEESO')
+                    user_input = user_input.replace('mesa', 'MEESO')
 
-            except sr.WaitTimeoutError:
-                print("[ERROR] No speech detected.")
-                continue  # Return to the start of the loop for another input
-            except sr.UnknownValueError:
-                print("[ERROR] Sorry, I did not understand that.")
-            except sr.RequestError as e:
-                print(f"[ERROR] Could not request results; {e}")
+                    if user_input == 'exit':
+                        print(">> Exiting to Main Menu")
+                        break
 
+                    print("You: " + user_input)
+            
+                    tts_file = ask_openai(assistant_id, user_input, client, existing_thread_id, tts_option)
+                    
+                    if tts_file:
+                        play_audio(tts_file)
+                except sr.WaitTimeoutError:
+                    print("[ERROR] No speech detected.")
+                    continue  # Return to the start of the loop for another input
+                except sr.UnknownValueError:
+                    print("[ERROR] Sorry, I did not understand that.")
+                except sr.RequestError as e:
+                    print(f"[ERROR] Could not request results; {e}")
+                
+           
 
 def typing_input_mode(assistant_id, client, existing_thread_id, tts_option):
-    print(">> MEESO Assistant Ready (Typing Mode). Type your query, or type 'exit' to quit.")
+    print("\n>> MEESO Assistant Ready (Typing Mode). Type your query, or type 'exit' to quit.")
 
     while True:
-        user_input = input("You: ").strip().lower()
+        user_input = input("Press Enter to Continue or input 'm' to exit to Main Menu: ")
+        if user_input == 'm':
+            return  # Return to the main function
+        else:
+            user_input = input("You: ").strip().lower()
 
-        if user_input == 'exit':
-            print(">> Exiting MEESO Assistant.")
-            break
-        
-        # response = ask_openai(assistant_id, user_input)
-        # print("MEESO:", response)
-        response, tts_file = ask_openai(assistant_id, user_input, client, existing_thread_id, tts_option)
-        print("MEESO:", response)
-        if tts_file:
-            play_audio(tts_file)
+            if user_input == 'exit':
+                print(">> Exiting to Main Menu")
+                break
+            
+            # response = ask_openai(assistant_id, user_input)
+            # print("MEESO:", response)
+            tts_file = ask_openai(assistant_id, user_input, client, existing_thread_id, tts_option)
+            if tts_file:
+                play_audio(tts_file)
+    
