@@ -25,7 +25,7 @@ def main():
     print("Thread Details:")
     print(thread_details)
 
-    tts_choice = input("Choose TTS option (1 for OpenAI, 2 for pyttsx3): ").strip()
+    tts_choice = input("Choose TTS option (1 for OpenAI TTS, 2 for Google TTS): ").strip()
     input_method = input("\n>> Choose input method: Type 'voice' for voice recognition or 'type' for typing: ").lower()
     assistant_id = assistants.data[0].id
     if input_method == 'voice':

@@ -4,6 +4,7 @@ import pygame
 import keyboard
 import time
 import os
+from gtts import gTTS
 
 
 def pyttsx3_speech(text):
@@ -12,36 +13,50 @@ def pyttsx3_speech(text):
     engine.runAndWait()
 
 
-def text_to_speech(text):
-    voice="fable"
-    model="tts-1"
-    api_key = os.environ.get('OPENAI_API_KEY')
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+def text_to_speech(text, tts_option):
 
-    data = {
-        "model": model,
-        "input": text,
-        "voice": voice,
-        "speed": 1.15
-    }
-    response = requests.post("https://api.openai.com/v1/audio/speech", json=data, headers=headers)
-    
-    if response.status_code == 200:
+     if tts_option == "1":
+        voice="fable"
+        model="tts-1"
+        api_key = os.environ.get('OPENAI_API_KEY')
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "model": model,
+            "input": text,
+            "voice": voice,
+            "speed": 1.15
+        }
+        response = requests.post("https://api.openai.com/v1/audio/speech", json=data, headers=headers)
+        if response.status_code == 200:
+            audio_folder = "audio"
+            if not os.path.exists(audio_folder):
+                os.makedirs(audio_folder)
+
+            audio_file = os.path.join(audio_folder, f"output_{int(time.time())}.mp3")
+            with open(audio_file, "wb") as file:
+                file.write(response.content)
+            return audio_file
+        else:
+            print("[ERROR] Error in TTS:", response.status_code, response.text)
+            return None
+
+
+     elif tts_option == "2":
+        tts = gTTS(text)
         audio_folder = "audio"
         if not os.path.exists(audio_folder):
             os.makedirs(audio_folder)
-
         audio_file = os.path.join(audio_folder, f"output_{int(time.time())}.mp3")
-        with open(audio_file, "wb") as file:
-            file.write(response.content)
+        tts.save(audio_file)
         return audio_file
-    else:
-        print("[ERROR] Error in TTS:", response.status_code, response.text)
-        return None
-
+       
+   
+    
+    
 def play_audio(file_path):
     pygame.mixer.init()
     pygame.mixer.music.load(file_path)

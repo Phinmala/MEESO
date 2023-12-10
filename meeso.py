@@ -29,14 +29,8 @@ def ask_openai(assistant_id, question, client, existing_thread_id, tts_option):
                     last_message = message.content[0].text.value
                     #return (last_message)
                     print("MEESO: " + last_message)
-                    if tts_option == "1":
-                        tts_file = text_to_speech(last_message)  # Convert text to speech
-                        return tts_file
-                    elif tts_option == "2":
-                        pyttsx3_speech(last_message)
-                        return
-                   
-                    
+                    tts_file = text_to_speech(last_message, tts_option)  # Convert text to speech
+                    return tts_file   
             return ">> No response from the assistant.", None
         print('>> MEESO is thinking...')
         time.sleep(2)
@@ -67,13 +61,8 @@ def voice_input_mode(assistant_id, client, existing_thread_id, tts_option):
                     break
 
                 print("You: " + user_input)
-                if tts_option == "1":
-                        tts_file = ask_openai(assistant_id, user_input, client, existing_thread_id, tts_option)
-                
-                elif tts_option == "2":
-                        ask_openai(assistant_id, user_input, client, existing_thread_id, tts_option)
-                        tts_file = None
-                       
+         
+                tts_file = ask_openai(assistant_id, user_input, client, existing_thread_id, tts_option)
                 
                 if tts_file:
                     play_audio(tts_file)
