@@ -1,8 +1,6 @@
 from utils import text_to_speech, play_audio, pyttsx3_speech
 import speech_recognition as sr
 import time
-import keyboard
-
 
 def ask_openai(assistant_id, question, client, existing_thread_id, tts_option):
     message = client.beta.threads.messages.create(

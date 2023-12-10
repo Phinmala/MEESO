@@ -4,7 +4,7 @@
             "name": "Run MEESO",
             "type": "python",
             "request": "launch",
-            "program": "main.py", // Specify the full path to your file
+            "program": "${workspaceFolder}/meeso_app/main.py",
             "cwd": "${workspaceFolder}",
             "env": {},
             "envFile": "${workspaceFolder}/.myenv",

@@ -6,7 +6,6 @@ import time
 import os
 from gtts import gTTS
 
-
 def pyttsx3_speech(text):
     engine = pyttsx3.init()
     engine.say(text)
@@ -32,7 +31,7 @@ def text_to_speech(text, tts_option):
         }
         response = requests.post("https://api.openai.com/v1/audio/speech", json=data, headers=headers)
         if response.status_code == 200:
-            audio_folder = "audio"
+            audio_folder = os.path.join(os.path.dirname(__file__), '..', 'audio')
             if not os.path.exists(audio_folder):
                 os.makedirs(audio_folder)
 
