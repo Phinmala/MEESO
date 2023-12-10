@@ -1,0 +1,112 @@
+import openai
+import os
+import time
+import speech_recognition as sr
+
+# Initialize the OpenAI client with your API key
+api_key = os.environ.get('OPENAI_API_KEY')
+if not api_key:
+    raise ValueError("No OpenAI API key found in environment variables")
+
+client = openai.OpenAI(api_key=api_key)
+
+# Check for existing assistants or create a new one
+assistants = client.beta.assistants.list(order="desc", limit="20")
+if not assistants.data:
+    print('>> Creating MEESO...')
+    assistant = client.beta.assistants.create(
+        name="MEESO",
+        instructions="You're an assistant named MEESO, it stands for Molly's Expert in Efficient Specialized Operations.",
+        model="gpt-4-1106-preview",
+        tools=[{"type": "code_interpreter"}],
+    )
+    assistant_id = assistant.id
+else:
+    assistant_id = assistants.data[0].id
+
+print('assistant.id: ' + assistant_id)
+existing_thread_id = "thread_zYVPSfD048pQbxqoLmmuKyPJ"
+thread_details = client.beta.threads.retrieve(thread_id=existing_thread_id)
+print("Thread Details:")
+print(thread_details)
+
+def ask_openai(assistant_id, question):
+    message = client.beta.threads.messages.create(
+    thread_id=existing_thread_id,
+    role="user",
+    content=question
+)
+    run = client.beta.threads.runs.create(
+    thread_id=existing_thread_id,
+    assistant_id=assistant_id,
+    )
+    # Wait for the run to complete and retrieve the response
+ 
+    while True:
+
+        run = client.beta.threads.runs.retrieve(
+            thread_id=existing_thread_id,
+            run_id=run.id
+        ) 
+        if run.status == 'completed':
+            thread_messages = client.beta.threads.messages.list(existing_thread_id)
+            for message in thread_messages.data:
+                if message.role == "assistant":
+                    last_message = message.content[0].text.value
+                    return (last_message)
+        print('>> MEESO is thinking...')
+        time.sleep(5)
+                
+def start_cli():
+    input_method = input("Choose input method: Type 'voice' for voice recognition or 'type' for typing: ").lower()
+    assistant_id = assistants.data[0].id
+    if input_method == 'voice':
+        voice_input_mode(assistant_id)
+    elif input_method == 'type':
+        typing_input_mode(assistant_id)
+    else:
+        print("Invalid input method. Please type 'voice' or 'type'.")
+
+def voice_input_mode(assistant_id):
+    recognizer = sr.Recognizer()
+    microphone = sr.Microphone()
+    print("MEESO Assistant Ready (Voice Mode). Speak your query, or say 'exit' to quit.")
+
+    while True:
+        with microphone as source:
+            print("Listening...")
+            recognizer.adjust_for_ambient_noise(source)
+            audio = recognizer.listen(source)
+
+        try:
+            user_input = recognizer.recognize_google(audio).lower()
+
+            if user_input == 'exit':
+                print("Exiting MEESO Assistant.")
+                break
+
+            print("You: " + user_input)
+            response = ask_openai(assistant_id, user_input)
+            print("MEESO:", response)
+
+        except sr.UnknownValueError:
+            print("Sorry, I did not understand that.")
+        except sr.RequestError as e:
+            print(f"Could not request results; {e}")
+
+def typing_input_mode(assistant_id):
+    print("MEESO Assistant Ready (Typing Mode). Type your query, or type 'exit' to quit.")
+
+    while True:
+        user_input = input("You: ").strip().lower()
+
+        if user_input == 'exit':
+            print("Exiting MEESO Assistant.")
+            break
+        
+        
+        response = ask_openai(assistant_id, user_input)
+        print("MEESO:", response)
+
+if __name__ == "__main__":
+    start_cli()
