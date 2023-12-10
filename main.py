@@ -24,12 +24,14 @@ def main():
     thread_details = client.beta.threads.retrieve(thread_id=existing_thread_id)
     print("Thread Details:")
     print(thread_details)
+
+    tts_choice = input("Choose TTS option (1 for OpenAI, 2 for pyttsx3): ").strip()
     input_method = input("\n>> Choose input method: Type 'voice' for voice recognition or 'type' for typing: ").lower()
     assistant_id = assistants.data[0].id
     if input_method == 'voice':
-        voice_input_mode(assistant_id,client, existing_thread_id)
+        voice_input_mode(assistant_id,client, existing_thread_id, tts_choice)
     elif input_method == 'type':
-        typing_input_mode(assistant_id, client, existing_thread_id)
+        typing_input_mode(assistant_id, client, existing_thread_id, tts_choice)
     else:
         print("[ERROR] Invalid input method. Please type 'voice' or 'type'.")
 

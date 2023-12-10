@@ -1,10 +1,10 @@
-from utils import text_to_speech, play_audio
+from utils import text_to_speech, play_audio, pyttsx3_speech
 import speech_recognition as sr
 import time
 import keyboard
 
 
-def ask_openai(assistant_id, question, client, existing_thread_id):
+def ask_openai(assistant_id, question, client, existing_thread_id, tts_option):
     message = client.beta.threads.messages.create(
     thread_id=existing_thread_id,
     role="user",
@@ -28,13 +28,20 @@ def ask_openai(assistant_id, question, client, existing_thread_id):
                 if message.role == "assistant":
                     last_message = message.content[0].text.value
                     #return (last_message)
-                    tts_file = text_to_speech(last_message)  # Convert text to speech
-                    return last_message, tts_file
+                    print("MEESO: " + last_message)
+                    if tts_option == "1":
+                        tts_file = text_to_speech(last_message)  # Convert text to speech
+                        return tts_file
+                    elif tts_option == "2":
+                        pyttsx3_speech(last_message)
+                        return
+                   
+                    
             return ">> No response from the assistant.", None
         print('>> MEESO is thinking...')
         time.sleep(2)
 
-def voice_input_mode(assistant_id, client, existing_thread_id):
+def voice_input_mode(assistant_id, client, existing_thread_id, tts_option):
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
     print(">> MEESO Assistant Ready (Voice Mode). Press Enter to start speaking. Recording will stop if silence is detected for 5 seconds.")
@@ -60,8 +67,14 @@ def voice_input_mode(assistant_id, client, existing_thread_id):
                     break
 
                 print("You: " + user_input)
-                response, tts_file = ask_openai(assistant_id, user_input, client, existing_thread_id)
-                print("MEESO:", response)
+                if tts_option == "1":
+                        tts_file = ask_openai(assistant_id, user_input, client, existing_thread_id, tts_option)
+                
+                elif tts_option == "2":
+                        ask_openai(assistant_id, user_input, client, existing_thread_id, tts_option)
+                        tts_file = None
+                       
+                
                 if tts_file:
                     play_audio(tts_file)
 
@@ -74,7 +87,7 @@ def voice_input_mode(assistant_id, client, existing_thread_id):
                 print(f"[ERROR] Could not request results; {e}")
 
 
-def typing_input_mode(assistant_id, client, existing_thread_id):
+def typing_input_mode(assistant_id, client, existing_thread_id, tts_option):
     print(">> MEESO Assistant Ready (Typing Mode). Type your query, or type 'exit' to quit.")
 
     while True:
@@ -86,7 +99,7 @@ def typing_input_mode(assistant_id, client, existing_thread_id):
         
         # response = ask_openai(assistant_id, user_input)
         # print("MEESO:", response)
-        response, tts_file = ask_openai(assistant_id, user_input, client, existing_thread_id)
+        response, tts_file = ask_openai(assistant_id, user_input, client, existing_thread_id, tts_option)
         print("MEESO:", response)
         if tts_file:
             play_audio(tts_file)

@@ -1,10 +1,20 @@
 import requests
+import pyttsx3
 import pygame
 import keyboard
 import time
 import os
 
-def text_to_speech(text, voice="fable", model="tts-1"):
+
+def pyttsx3_speech(text):
+    engine = pyttsx3.init()
+    engine.say(text)
+    engine.runAndWait()
+
+
+def text_to_speech(text):
+    voice="fable"
+    model="tts-1"
     api_key = os.environ.get('OPENAI_API_KEY')
     headers = {
         "Authorization": f"Bearer {api_key}",
